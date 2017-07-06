@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Navigator</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <div>
+      <input type="text" id="origin-input" placeholder="From" class="controls"/>
+      <input type="text" id="destination-input" placeholder="To" class="controls"/>
+      <input type="button" id="submit-button" class="controls btn-controls" value="Get min distance"/>
+      <span id="distance-value"></span>
+      <span id="duration-value"></span>
+    </div>
+    
+    <div id="map"></div>
+
+    <script src="js/initMap.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOMnmhinhboANYfzfyTqhlQqezl1Jj83Y&libraries=places&callback=initialize" async defer></script>
+  </body>
+</html>
