@@ -202,20 +202,15 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, map, obj
             optimizeWaypoints: false
         }, function (response, status) {
             if (status === 'OK') {
-                    debugger
                 switch (clickBtnValue) {
                     case 'Get min distance':
                         calculateMinDistance(response.routes);
                         //displayFilterWaypoints(response);
                         directionsRendererFunction(map, response, minDistance);
-                        break;
                     case 'Get min duration':
                         calculateMinDuration(response.routes);
                         //displayFilterWaypoints(response);
                         directionsRendererFunction(map, response, minDuration);
-                        break;
-                    default:
-                        break;
                 }
             } else {
                 window.alert('Directions request failed due to ' + status);
