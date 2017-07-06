@@ -99,12 +99,17 @@ function addValueToList(map) {
 }
 
 function findDistation() {
-    for(var i = 0; i < geocoderLocationList.length; i++) {
-        var tempArr = Object.assign([], geocoderLocationList);
-        tempArr.splice(i, 1);
+    //var tets = ['Nashville, TN, United States', 'Madison, WI, United States', 'Dubuque, IA, United States']
+    for(var i = 0, tempArr = []; i < geocoderLocationList.length; i++) {
+        //Object.assign(tempArr, geocoderLocationList);
+        for (var j = 0; j < geocoderLocationList.length; j++) {
+            tempArr[j] = geocoderLocationList[j]
+        }
+        var a = tempArr.splice(i, 1);
+        debugger
         service.getDistanceMatrix({
             origins: [geocoderLocationList[i]],
-            destinations: tempArr,
+            destinations: tets,
             travelMode: 'DRIVING'
         }, callback);
 

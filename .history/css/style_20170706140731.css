@@ -23,7 +23,10 @@ html, body {
     text-overflow: ellipsis;
     width: 200px;
 }
-
+.controls:focus {
+    outline: solid 1px #0091FF;
+    border-radius: 2px;
+}
 .btn-clear {
     background-color: #FF6262;
 }

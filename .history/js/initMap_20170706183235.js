@@ -102,6 +102,7 @@ function findDistation() {
     for(var i = 0; i < geocoderLocationList.length; i++) {
         var tempArr = Object.assign([], geocoderLocationList);
         tempArr.splice(i, 1);
+        debugger
         service.getDistanceMatrix({
             origins: [geocoderLocationList[i]],
             destinations: tempArr,

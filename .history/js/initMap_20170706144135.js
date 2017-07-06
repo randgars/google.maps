@@ -1,9 +1,6 @@
-'use strict';
-
 var minDistance,
     minDuration,
     geocoder,
-    service,
     locationList = [],
     geocoderLocationList = [],
     waypointsList = document.getElementById('waypoints-list'),
@@ -19,7 +16,6 @@ var minDistance,
 function initialize() {
     var directionsDisplay = new google.maps.DirectionsRenderer();
     var directionsService = new google.maps.DirectionsService();
-    service = new google.maps.DistanceMatrixService;
     geocoder = new google.maps.Geocoder();
     
     var locationAutocomplete = new google.maps.places.Autocomplete(
@@ -44,7 +40,7 @@ function initialize() {
     var map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
     var onClickHandler = function () {
-        calculateAndDisplayRoute(directionsService, directionsDisplay, map, this, service);
+        calculateAndDisplayRoute(directionsService, directionsDisplay, map, this);
     };
     var onClickAddValue = function () {
         addValueToList(map)
@@ -60,8 +56,6 @@ function initialize() {
     addButton.addEventListener('click', onClickAddValue);
     clearButton.addEventListener('click', onClickClear);
 }
-
-
 
 function addValueToList(map) {
     if (locationInput.value) {
@@ -90,7 +84,6 @@ function addValueToList(map) {
                 title: `${i+1}`
             });
         }
-        debugger
         return geocoderLocationList;
     }, function (error) {
         console.log(error)
@@ -98,26 +91,6 @@ function addValueToList(map) {
     locationInput.value = null;
 }
 
-function findDistation() {
-    for(var i = 0; i < geocoderLocationList.length; i++) {
-        var tempArr = Object.assign([], geocoderLocationList);
-        tempArr.splice(i, 1);
-        service.getDistanceMatrix({
-            origins: [geocoderLocationList[i]],
-            destinations: tempArr,
-            travelMode: 'DRIVING'
-        }, callback);
-
-        function callback(response, status) {
-            if (status !== 'OK') {
-                alert('Error was: ' + status);
-            } else {
-                debugger
-            }
-        }
-    }
-    
-}
 
 function calculateMinDistance(routes) {
     var distanceValues = routes.map(function (item) {
@@ -145,7 +118,7 @@ function calculateMinDistance(routes) {
             };
         }
     }
-    findDistation();
+
     return minDistance;
 }
 
@@ -212,7 +185,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, map, obj
     for (var i = 0, parts = [], max = 24; i < geocoderLocationList.length; i = i + max) {
         parts.push(geocoderLocationList.slice(i, i + max + 1));
     }
-
     for (var i = 0; i < parts.length; i++) {
         var waypoints = [];
         for (var j = 1; j < parts[i].length - 1; j++) {

@@ -23,7 +23,9 @@ html, body {
     text-overflow: ellipsis;
     width: 200px;
 }
-
+.controls:active {
+    outline: solid 1px #0091FF;
+}
 .btn-clear {
     background-color: #FF6262;
 }

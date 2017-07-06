@@ -1,5 +1,3 @@
-'use strict';
-
 var minDistance,
     minDuration,
     geocoder,
@@ -99,24 +97,8 @@ function addValueToList(map) {
 }
 
 function findDistation() {
-    for(var i = 0; i < geocoderLocationList.length; i++) {
-        var tempArr = Object.assign([], geocoderLocationList);
-        tempArr.splice(i, 1);
-        service.getDistanceMatrix({
-            origins: [geocoderLocationList[i]],
-            destinations: tempArr,
-            travelMode: 'DRIVING'
-        }, callback);
-
-        function callback(response, status) {
-            if (status !== 'OK') {
-                alert('Error was: ' + status);
-            } else {
-                debugger
-            }
-        }
-    }
-    
+    service
+    debugger
 }
 
 function calculateMinDistance(routes) {
@@ -212,7 +194,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, map, obj
     for (var i = 0, parts = [], max = 24; i < geocoderLocationList.length; i = i + max) {
         parts.push(geocoderLocationList.slice(i, i + max + 1));
     }
-
     for (var i = 0; i < parts.length; i++) {
         var waypoints = [];
         for (var j = 1; j < parts[i].length - 1; j++) {

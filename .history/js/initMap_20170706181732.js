@@ -99,12 +99,13 @@ function addValueToList(map) {
 }
 
 function findDistation() {
-    for(var i = 0; i < geocoderLocationList.length; i++) {
-        var tempArr = Object.assign([], geocoderLocationList);
-        tempArr.splice(i, 1);
+    for(var i = 0, tempArr = []; i < geocoderLocationList.length; i++) {
+        Object.assign(tempArr, geocoderLocationList);
+        var a = tempArr.splice(i, 1);
+        debugger
         service.getDistanceMatrix({
             origins: [geocoderLocationList[i]],
-            destinations: tempArr,
+            destinations: a,
             travelMode: 'DRIVING'
         }, callback);
 

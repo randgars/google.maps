@@ -23,19 +23,16 @@ html, body {
     text-overflow: ellipsis;
     width: 200px;
 }
-
 .btn-clear {
     background-color: #FF6262;
+    color: #fff;
 }
 .btn-submit {
     background-color: #009122;
-}
-.btn-add {
-    background-color: #74C3FF;
+    color: #fff;
 }
 .btn-controls {
     cursor: pointer;
-    color: #fff;
 }
 
 #origin-input:focus,

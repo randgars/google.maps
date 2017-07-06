@@ -99,23 +99,30 @@ function addValueToList(map) {
 }
 
 function findDistation() {
-    for(var i = 0; i < geocoderLocationList.length; i++) {
-        var tempArr = Object.assign([], geocoderLocationList);
-        tempArr.splice(i, 1);
-        service.getDistanceMatrix({
-            origins: [geocoderLocationList[i]],
-            destinations: tempArr,
-            travelMode: 'DRIVING'
-        }, callback);
-
-        function callback(response, status) {
-            if (status !== 'OK') {
-                alert('Error was: ' + status);
-            } else {
-                debugger
+    var promise;
+    
+        promise = new Promise(function(resolve, reject) {
+            for(var i = 0, tempArr = []; i < geocoderLocationList.length; i++) {
+                Object.assign(tempArr, geocoderLocationList);
+                tempArr.splice(i, 1);
+                service.getDistanceMatrix({
+                    origins: [geocoderLocationList[i]],
+                    destinations: tempArr,
+                    travelMode: 'DRIVING'
+                }, callback);
+                function callback(response, status) {
+                    if (status !== 'OK') {
+                        alert('Error was: ' + status);
+                    } else {
+                        resolve(response)
+                    }
+                }
             }
-        }
-    }
+        }).then(function (response) {
+            debugger
+        }, function (error) {
+            console.log(error)
+        })
     
 }
 

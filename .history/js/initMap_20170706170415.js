@@ -1,5 +1,3 @@
-'use strict';
-
 var minDistance,
     minDuration,
     geocoder,
@@ -99,21 +97,22 @@ function addValueToList(map) {
 }
 
 function findDistation() {
-    for(var i = 0; i < geocoderLocationList.length; i++) {
-        var tempArr = Object.assign([], geocoderLocationList);
-        tempArr.splice(i, 1);
+    for(var i = 0, tempArr = []; i < geocoderLocationList.length; i++) {
+        Object.assign(geocoderLocationList, tempArr)
         service.getDistanceMatrix({
             origins: [geocoderLocationList[i]],
-            destinations: tempArr,
-            travelMode: 'DRIVING'
+            destinations: geocoderLocationList.slice(i),
+            travelMode: 'DRIVING',
+            transitOptions: TransitOptions,
+            drivingOptions: DrivingOptions,
+            unitSystem: UnitSystem,
+            avoidHighways: Boolean,
+            avoidTolls: Boolean,
         }, callback);
 
         function callback(response, status) {
-            if (status !== 'OK') {
-                alert('Error was: ' + status);
-            } else {
-                debugger
-            }
+        // See Parsing the Results for
+        // the basics of a callback function.
         }
     }
     
