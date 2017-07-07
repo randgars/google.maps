@@ -102,11 +102,10 @@ function addValueToList(map) {
     locationInput.value = null;
 }
 
-function findDistations(directionsService, directionsDisplay, map, clickBtnValue) {
+function findDistations() {
     for (var i = 0; i < geocoderLocationList.length; i++) {
         var tempArr = Object.assign([], geocoderLocationList);
         tempArr.splice(i, 1);
-        debugger
         service.getDistanceMatrix({
             origins: [geocoderLocationList[i]],
             destinations: tempArr,
@@ -121,23 +120,17 @@ function findDistations(directionsService, directionsDisplay, map, clickBtnValue
                 var result = response.rows[0].elements;
                 var pointDistancesArray = [];
                 for (var i = 0; i < result.length; i++) {
-                    debugger
-                    tempArr = Object.assign([], geocoderLocationList);
-                    tempArr.splice(i, 1);
-                    pointDistancesArray.push({point: tempArr[i], distance: result[i].distance.value, name: response.destinationAddresses[i]});
+                    pointDistancesArray.push({point: tempArr[i], distance: result[i].distance.value});
                 };
-                for (var j = 0; j < response; j++) {
-                    pointsDistations = {
-                        point: geocoderLocationList[j],
-                        distances: pointDistancesArray,
-                        name: response.originAddresses[0]
-                    };
-                }
-                // allDistances undefined
+                pointsDistations = {
+                    point: geocoderLocationList[0],
+                    distances: pointDistancesArray
+                };
             }
             allDistances.push(pointsDistations);
-            debugger
-            findMinDistation(directionsService, directionsDisplay, map, clickBtnValue);
+            
+            findMinDistation();
+            return allDistances;
         }
     }
 }
@@ -145,7 +138,7 @@ function findDistations(directionsService, directionsDisplay, map, clickBtnValue
 function compareDistance(pointA, pointB) {
     return pointA.distance - pointB.distance;
 }
-function directionsRequest(directionsService, directionsDisplay, map, clickBtnValue) {
+function directionsRequest() {
     for (var i = 0; i < parts.length; i++) {
         var waypoints = [];
         for (var j = 1; j < parts[i].length - 1; j++) {
@@ -186,7 +179,7 @@ function directionsRequest(directionsService, directionsDisplay, map, clickBtnVa
         });
     }
 }
-function findMinDistation(directionsService, directionsDisplay, map, clickBtnValue) {
+function findMinDistation() {
     debugger
     if (allDistances.length == geocoderLocationList.length) {
             var i = 0;
@@ -216,7 +209,7 @@ function findMinDistation(directionsService, directionsDisplay, map, clickBtnVal
             for (var i = 0, parts = [], max = 24; i < fullFinalyList.length; i = i + max) {
                 parts.push(fullFinalyList.slice(i, i + max + 1));
             }
-            directionsRequest(directionsService, directionsDisplay, map, clickBtnValue);
+            directionsRequest();
             
 
 
@@ -315,7 +308,7 @@ function directionsRendererFunction(map, response, routeIndex) {
 
 function calculateAndDisplayRoute(directionsService, directionsDisplay, map, obj) {
     var clickBtnValue = obj.value;
-    findDistations(directionsService, directionsDisplay, map, clickBtnValue);
+    findDistations();
     
 
     

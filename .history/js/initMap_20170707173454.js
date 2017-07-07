@@ -133,7 +133,7 @@ function findDistations(directionsService, directionsDisplay, map, clickBtnValue
                         name: response.originAddresses[0]
                     };
                 }
-                // allDistances undefined
+                
             }
             allDistances.push(pointsDistations);
             debugger

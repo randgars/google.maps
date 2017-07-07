@@ -122,22 +122,18 @@ function findDistations(directionsService, directionsDisplay, map, clickBtnValue
                 var pointDistancesArray = [];
                 for (var i = 0; i < result.length; i++) {
                     debugger
-                    tempArr = Object.assign([], geocoderLocationList);
-                    tempArr.splice(i, 1);
                     pointDistancesArray.push({point: tempArr[i], distance: result[i].distance.value, name: response.destinationAddresses[i]});
                 };
-                for (var j = 0; j < response; j++) {
-                    pointsDistations = {
-                        point: geocoderLocationList[j],
-                        distances: pointDistancesArray,
-                        name: response.originAddresses[0]
-                    };
-                }
-                // allDistances undefined
+                pointsDistations = {
+                    point: geocoderLocationList[0],
+                    distances: pointDistancesArray,
+                    name: response.originAddresses[0]
+                };
             }
             allDistances.push(pointsDistations);
-            debugger
+            
             findMinDistation(directionsService, directionsDisplay, map, clickBtnValue);
+            return allDistances;
         }
     }
 }
