@@ -56,7 +56,7 @@ function initialize() {
     geocoder = new google.maps.Geocoder();
 
     initMap();
-    getCurrentLocation();
+    //getCurrentLocation();
 
     originAutocomplete = new google.maps.places.Autocomplete(
         originInput, {
@@ -180,7 +180,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, service)
         getDistanceBetweenPoints(service, [geocoderLocationList[i].location], tempWaypointsArray).then(function (response) {
             var childWaypoints = [];
             for (var i = 0; i < response.destinationAddresses.length; i++) {
-                debugger
                 childWaypoints.push({
                     pointAddress: response.destinationAddresses[i], //child waypoint address
                     distance: response.rows[0].elements[i].distance.value //distance from current waypoint to child waypoint
@@ -207,6 +206,7 @@ function getDistanceBetweenPoints(service, origins, destinations) {
         }, function (results, status) {
             if (status == 'OK') {
                 resolve(results)
+                //setMarkers(results[0].geometry.location, pointLabel);
             } else {
                 alert('Geocode was not successful for the following reason: ' + status);
             }

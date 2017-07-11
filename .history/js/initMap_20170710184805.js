@@ -2,18 +2,16 @@
 
 var geocoder,
     map,
-    originAutocomplete,
-    destinationAutocomplete,
-    addWaypointsAutocomplete,
     minDistance,
     totalDistance = 0,
     locationList = [],
     geocoderLocationList = [],
     waypointsList = document.getElementById('waypoints-list'),
-    originInput = document.getElementById('origin-input'),
-    destinationInput = document.getElementById('destination-input'),
+    //originInput = document.getElementById('origin-input'),
+    //destinationInput = document.getElementById('destination-input'),
+    locationInput = document.getElementById('location-input'),
     submitButton = document.getElementById('submit-button'),
-    waypointsInput = document.getElementById('waypoints-input'),
+    addButton = document.getElementById('add-button'),
     clearButton = document.getElementById('clear-button'),
     fieldDistanceValue = document.getElementById('distance-value'),
     fieldDurationValue = document.getElementById('duration-value');
@@ -56,18 +54,10 @@ function initialize() {
     geocoder = new google.maps.Geocoder();
 
     initMap();
-    getCurrentLocation();
+    //getCurrentLocation();
 
-    originAutocomplete = new google.maps.places.Autocomplete(
-        originInput, {
-            placeIdOnly: true
-        });
-    destinationAutocomplete = new google.maps.places.Autocomplete(
-        destinationInput, {
-            placeIdOnly: true
-        });
-    addWaypointsAutocomplete = new google.maps.places.Autocomplete(
-        waypointsInput, {
+    var newLocationInput = new google.maps.places.Autocomplete(
+        locationInput, {
             placeIdOnly: true
         });
 
@@ -80,64 +70,16 @@ function initialize() {
         geocoderLocationList.length = 0;
         waypointsList.innerHTML = '';
         initMap();
-    };
-
-    originAutocomplete.addListener('place_changed', handleChangeOrigin);
-    destinationAutocomplete.addListener('place_changed', handleChangeDestination);
-    addWaypointsAutocomplete.addListener('place_changed', addValueToList);
-
+    }
     submitButton.addEventListener('click', onClickSubmit);
+    addButton.addEventListener('click', addValueToList);
     clearButton.addEventListener('click', onClickClear);
-}
-
-function setMarkers(pointPosition, pointLabel) {
-    return new google.maps.Marker({
-        position: pointPosition,
-        map: map,
-        label: pointLabel
-    });
-}
-
-function handleChangeOrigin() {
-    var pointLabel = 'A';
-    var address = originAutocomplete.getPlace().name;
-    getGeoCode(address).then(function (response) {
-        setMarkers(response[0].geometry.location, pointLabel);
-    }).catch(function (error) {
-        window.console.error(error);
-    })
-}
-
-function handleChangeDestination() {
-    var pointLabel = 'B';
-    var address = destinationAutocomplete.getPlace().name;
-    getGeoCode(address).then(function (response) {
-        setMarkers(response[0].geometry.location, pointLabel);
-    }).catch(function (error) {
-        window.console.error(error);
-    })
-}
-
-function getGeoCode(address) {
-    return new Promise(function (resolve, reject) {
-        geocoder.geocode({
-            'address': address
-        }, function (results, status) {
-            if (status == 'OK') {
-                resolve(results)
-                //setMarkers(results[0].geometry.location, pointLabel);
-            } else {
-                alert('Geocode was not successful for the following reason: ' + status);
-            }
-        })
-    })
 }
 
 function addValueToList() {
     //add waypoint to list
-    debugger
-    if (addWaypointsAutocomplete.getPlace().name) {
-        locationList.push(addWaypointsAutocomplete.getPlace().name);
+    if (locationInput.value) {
+        locationList.push(locationInput.value);
     } else {
         return;
     }
@@ -148,23 +90,29 @@ function addValueToList() {
     }).join('');
 
     //get geocode and display marker
-    var address = addWaypointsAutocomplete.getPlace().name;
-    getGeoCode(address).then(function (response) {
-        geocoderLocationList.push({
-            location: response[0].geometry.location,
-            placeId: response[0].place_id,
-            address: response[0].formatted_address
-        });
-        for (var i = 0; i < geocoderLocationList.length; i++) {
-            var pointLabel = `${i+1}`;
-            setMarkers(geocoderLocationList[i].location, pointLabel);
+    geocoder.geocode({
+        'address': locationInput.value
+    }, function (results, status) {
+        if (status == 'OK') {
+            geocoderLocationList.push({
+                location: results[0].geometry.location,
+                placeId: results[0].place_id,
+                address: results[0].formatted_address
+            });
+            for (var i = 0; i < geocoderLocationList.length; i++) {
+                new google.maps.Marker({
+                    position: geocoderLocationList[i].location,
+                    map: map,
+                    label: `${i+1}`
+                });
+            }
+            return geocoderLocationList;
+        } else {
+            alert('Geocode was not successful for the following reason: ' + status);
         }
-        return geocoderLocationList;
-    }).catch(function (error) {
-        window.console.error(error);
     })
 
-    waypointsInput.value = null;
+    locationInput.value = null;
 }
 
 function calculateAndDisplayRoute(directionsService, directionsDisplay, service) {
@@ -176,42 +124,37 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, service)
             tempWaypointsArray.push(geocoderLocationList[j].location); //clone main waypoints array
         }
         tempWaypointsArray.splice(i, 1); //delete current waypoint
+        service.getDistanceMatrix({
+            origins: [geocoderLocationList[i].location], //current waypoint
+            destinations: tempWaypointsArray, //waypoints array
+            travelMode: 'DRIVING'
+        }, callback);
 
-        getDistanceBetweenPoints(service, [geocoderLocationList[i].location], tempWaypointsArray).then(function (response) {
-            var childWaypoints = [];
-            for (var i = 0; i < response.destinationAddresses.length; i++) {
-                debugger
-                childWaypoints.push({
-                    pointAddress: response.destinationAddresses[i], //child waypoint address
-                    distance: response.rows[0].elements[i].distance.value //distance from current waypoint to child waypoint
-                })
-            }
-            var currentWaypoint = {
-                pointAddress: response.originAddresses[0], //current waypoint address
-                childWaypoints: childWaypoints //childs waypoints array
+        function callback(response, status) {
+            if (status !== 'OK') {
+                alert('Error was: ' + status);
+            } else {
+                var childWaypoints = [];
+                for (var i = 0; i < response.destinationAddresses.length; i++) {
+                    childWaypoints.push({
+                        pointAddress: response.destinationAddresses[i], //child waypoint address
+                        distance: response.rows[0].elements[i].distance.value //distance from current waypoint to child waypoint
+                    })
+                }
+                var currentWaypoint = {
+                    pointAddress: response.originAddresses[0], //current waypoint address
+                    childWaypoints: childWaypoints, //childs waypoints array
+                    waypointID: (idGenerator() + idGenerator() + "-" + idGenerator() + "-4" + idGenerator().substr(0,3) + "-" + idGenerator() + "-" + idGenerator() + idGenerator() + idGenerator()).toLowerCase()
+                }
             }
             parentWaypoints.push(currentWaypoint); //all parent waypoints
             findMinDistation(directionsService, directionsDisplay, parentWaypoints);
-        }).catch(function (error) {
-            window.console.error(error);
-        })
+        }
     }
 }
 
-function getDistanceBetweenPoints(service, origins, destinations) {
-    return new Promise(function (resolve, reject) {
-        service.getDistanceMatrix({
-            origins: origins, //current waypoint
-            destinations: destinations, //waypoints array
-            travelMode: 'DRIVING'
-        }, function (results, status) {
-            if (status == 'OK') {
-                resolve(results)
-            } else {
-                alert('Geocode was not successful for the following reason: ' + status);
-            }
-        })
-    })
+function idGenerator() {
+    return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
 }
 
 function findMinDistation(directionsService, directionsDisplay, parentWaypoints) {
@@ -239,29 +182,11 @@ function findMinDistation(directionsService, directionsDisplay, parentWaypoints)
                 }
             }
         }
-        finalyWaypointsArray.unshift(originInput.value);
-        finalyWaypointsArray.push(destinationInput.value);
         var parts = [];
         for (var i = 0, max = 24; i < finalyWaypointsArray.length; i = i + max) {
             parts.push(finalyWaypointsArray.slice(i, i + max + 1));
         }
-
-        for (var i = 0; i < parts.length; i++) {
-            var waypoints = [];
-            for (var j = 1; j < parts[i].length - 1; j++) {
-                waypoints.push({
-                    location: parts[i][j],
-                    stopover: false
-                });
-            }
-            directionsRequest(directionsService, parts[i][0], parts[i][parts[i].length - 1], waypoints).then(function (response) {
-                calculateMinDistance(response.routes);
-                fieldDistanceValue.innerHTML = 'Distance: ' + (totalDistance / 1000) + ' km';
-                directionsRendererFunction(response);
-            }).catch(function (error) {
-                window.console.error(error);
-            })
-        }
+        directionsRequest(directionsService, directionsDisplay, parts);
         return finalyWaypointsArray;
     } else {
         return;
@@ -272,26 +197,36 @@ function compareDistance(originPoint, destinationPoint) {
     return originPoint.distance - destinationPoint.distance;
 }
 
-function directionsRequest(directionsService, origin, destination, waypoints) {
-    return new Promise(function (resolve, reject) {
+function directionsRequest(directionsService, directionsDisplay, parts) {
+    for (var i = 0; i < parts.length; i++) {
+        var waypoints = [];
+        for (var j = 1; j < parts[i].length - 1; j++) {
+            waypoints.push({
+                location: parts[i][j],
+                stopover: false
+            });
+        }
+
         directionsService.route({
-            origin: origin,
-            destination: destination,
+            origin: parts[i][0],
+            destination: parts[i][parts[i].length - 1],
             travelMode: 'DRIVING',
             provideRouteAlternatives: false,
             waypoints: waypoints,
-            optimizeWaypoints: false
+            optimizeWaypoints: true
         }, function (response, status) {
             if (status === 'OK') {
-                resolve(response);
+                calculateMinDistance(response.routes);
+                directionsRendererFunction(response);
             } else {
                 window.alert('Directions request failed due to ' + status);
             }
         });
-    })
+    }
 }
 
-function calculateMinDistance(routes) {
+function calculateMinDistance(minDistance, routes) {
+    debugger
     var distanceValues = routes.map(function (item) {
         return item.legs[0]
     });
@@ -313,7 +248,9 @@ function calculateMinDistance(routes) {
     return minDistance;
 }
 
-function directionsRendererFunction(response) {
+function directionsRendererFunction(response, minDistance) {
+    fieldDistanceValue.innerHTML = 'Distance: ' + totalDistance;
+    debugger
     return new google.maps.DirectionsRenderer({
         map: map,
         directions: response,

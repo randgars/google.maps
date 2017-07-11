@@ -56,7 +56,7 @@ function initialize() {
     geocoder = new google.maps.Geocoder();
 
     initMap();
-    getCurrentLocation();
+    //getCurrentLocation();
 
     originAutocomplete = new google.maps.places.Autocomplete(
         originInput, {
@@ -207,6 +207,7 @@ function getDistanceBetweenPoints(service, origins, destinations) {
         }, function (results, status) {
             if (status == 'OK') {
                 resolve(results)
+                //setMarkers(results[0].geometry.location, pointLabel);
             } else {
                 alert('Geocode was not successful for the following reason: ' + status);
             }

@@ -56,7 +56,7 @@ function initialize() {
     geocoder = new google.maps.Geocoder();
 
     initMap();
-    getCurrentLocation();
+    //getCurrentLocation();
 
     originAutocomplete = new google.maps.places.Autocomplete(
         originInput, {
@@ -180,7 +180,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, service)
         getDistanceBetweenPoints(service, [geocoderLocationList[i].location], tempWaypointsArray).then(function (response) {
             var childWaypoints = [];
             for (var i = 0; i < response.destinationAddresses.length; i++) {
-                debugger
                 childWaypoints.push({
                     pointAddress: response.destinationAddresses[i], //child waypoint address
                     distance: response.rows[0].elements[i].distance.value //distance from current waypoint to child waypoint
@@ -207,6 +206,7 @@ function getDistanceBetweenPoints(service, origins, destinations) {
         }, function (results, status) {
             if (status == 'OK') {
                 resolve(results)
+                //setMarkers(results[0].geometry.location, pointLabel);
             } else {
                 alert('Geocode was not successful for the following reason: ' + status);
             }
@@ -256,7 +256,6 @@ function findMinDistation(directionsService, directionsDisplay, parentWaypoints)
             }
             directionsRequest(directionsService, parts[i][0], parts[i][parts[i].length - 1], waypoints).then(function (response) {
                 calculateMinDistance(response.routes);
-                fieldDistanceValue.innerHTML = 'Distance: ' + (totalDistance / 1000) + ' km';
                 directionsRendererFunction(response);
             }).catch(function (error) {
                 window.console.error(error);
@@ -314,6 +313,7 @@ function calculateMinDistance(routes) {
 }
 
 function directionsRendererFunction(response) {
+    fieldDistanceValue.innerHTML = 'Distance: ' + (totalDistance / 1000) + ' km';
     return new google.maps.DirectionsRenderer({
         map: map,
         directions: response,

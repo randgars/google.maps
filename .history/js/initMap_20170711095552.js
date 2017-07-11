@@ -56,7 +56,7 @@ function initialize() {
     geocoder = new google.maps.Geocoder();
 
     initMap();
-    getCurrentLocation();
+    //getCurrentLocation();
 
     originAutocomplete = new google.maps.places.Autocomplete(
         originInput, {
@@ -107,7 +107,6 @@ function handleChangeOrigin() {
         window.console.error(error);
     })
 }
-
 function handleChangeDestination() {
     var pointLabel = 'B';
     var address = destinationAutocomplete.getPlace().name;
@@ -119,7 +118,7 @@ function handleChangeDestination() {
 }
 
 function getGeoCode(address) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
         geocoder.geocode({
             'address': address
         }, function (results, status) {
@@ -167,6 +166,23 @@ function addValueToList() {
     waypointsInput.value = null;
 }
 
+function getDistanceBetweenPoints(service, origins, destinations) {
+    return new Promise(function(resolve, reject) {
+        service.getDistanceMatrix({
+            origins: origins, //current waypoint
+            destinations: destinations, //waypoints array
+            travelMode: 'DRIVING'
+        }, function (results, status) {
+            if (status == 'OK') {
+                resolve(results)
+                //setMarkers(results[0].geometry.location, pointLabel);
+            } else {
+                alert('Geocode was not successful for the following reason: ' + status);
+            }
+        })
+    })
+}
+
 function calculateAndDisplayRoute(directionsService, directionsDisplay, service) {
     //find distance between waypoints
     var parentWaypoints = [];
@@ -180,7 +196,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, service)
         getDistanceBetweenPoints(service, [geocoderLocationList[i].location], tempWaypointsArray).then(function (response) {
             var childWaypoints = [];
             for (var i = 0; i < response.destinationAddresses.length; i++) {
-                debugger
                 childWaypoints.push({
                     pointAddress: response.destinationAddresses[i], //child waypoint address
                     distance: response.rows[0].elements[i].distance.value //distance from current waypoint to child waypoint
@@ -196,22 +211,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, service)
             window.console.error(error);
         })
     }
-}
-
-function getDistanceBetweenPoints(service, origins, destinations) {
-    return new Promise(function (resolve, reject) {
-        service.getDistanceMatrix({
-            origins: origins, //current waypoint
-            destinations: destinations, //waypoints array
-            travelMode: 'DRIVING'
-        }, function (results, status) {
-            if (status == 'OK') {
-                resolve(results)
-            } else {
-                alert('Geocode was not successful for the following reason: ' + status);
-            }
-        })
-    })
 }
 
 function findMinDistation(directionsService, directionsDisplay, parentWaypoints) {
@@ -245,23 +244,7 @@ function findMinDistation(directionsService, directionsDisplay, parentWaypoints)
         for (var i = 0, max = 24; i < finalyWaypointsArray.length; i = i + max) {
             parts.push(finalyWaypointsArray.slice(i, i + max + 1));
         }
-
-        for (var i = 0; i < parts.length; i++) {
-            var waypoints = [];
-            for (var j = 1; j < parts[i].length - 1; j++) {
-                waypoints.push({
-                    location: parts[i][j],
-                    stopover: false
-                });
-            }
-            directionsRequest(directionsService, parts[i][0], parts[i][parts[i].length - 1], waypoints).then(function (response) {
-                calculateMinDistance(response.routes);
-                fieldDistanceValue.innerHTML = 'Distance: ' + (totalDistance / 1000) + ' km';
-                directionsRendererFunction(response);
-            }).catch(function (error) {
-                window.console.error(error);
-            })
-        }
+        directionsRequest(directionsService, directionsDisplay, parts);
         return finalyWaypointsArray;
     } else {
         return;
@@ -272,23 +255,32 @@ function compareDistance(originPoint, destinationPoint) {
     return originPoint.distance - destinationPoint.distance;
 }
 
-function directionsRequest(directionsService, origin, destination, waypoints) {
-    return new Promise(function (resolve, reject) {
+function directionsRequest(directionsService, directionsDisplay, parts) {
+    for (var i = 0; i < parts.length; i++) {
+        var waypoints = [];
+        for (var j = 1; j < parts[i].length - 1; j++) {
+            waypoints.push({
+                location: parts[i][j],
+                stopover: false
+            });
+        }
+
         directionsService.route({
-            origin: origin,
-            destination: destination,
+            origin: parts[i][0],
+            destination: parts[i][parts[i].length - 1],
             travelMode: 'DRIVING',
             provideRouteAlternatives: false,
             waypoints: waypoints,
             optimizeWaypoints: false
         }, function (response, status) {
             if (status === 'OK') {
-                resolve(response);
+                calculateMinDistance(response.routes);
+                directionsRendererFunction(response);
             } else {
                 window.alert('Directions request failed due to ' + status);
             }
         });
-    })
+    }
 }
 
 function calculateMinDistance(routes) {
@@ -314,6 +306,7 @@ function calculateMinDistance(routes) {
 }
 
 function directionsRendererFunction(response) {
+    fieldDistanceValue.innerHTML = 'Distance: ' + (totalDistance / 1000) + ' km';
     return new google.maps.DirectionsRenderer({
         map: map,
         directions: response,
